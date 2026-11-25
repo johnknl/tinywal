@@ -709,7 +709,13 @@ func parseSlot(b []byte) (slot, bool) {
 		snapFile: b[52],
 	}
 
-	return s, s.seq > 0 && s.snapFile < 2
+	// Positions and indexes stay far below 2^63 in practice; a slot beyond
+	// that, or with a snapshot past its first live record, is damaged.
+	valid := s.seq > 0 && s.snapFile < 2 &&
+		s.readAbs <= math.MaxInt64 && s.readIdx >= 1 && s.readIdx <= math.MaxInt64 &&
+		s.snapIdx < s.readIdx
+
+	return s, valid
 }
 
 func appendFrame(buf []byte, gen, idx uint64, epoch uint32, data []byte) []byte {
