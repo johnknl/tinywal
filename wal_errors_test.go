@@ -23,6 +23,7 @@ package tinywal
 
 import (
 	"errors"
+	"math"
 	"os"
 	"path/filepath"
 	"sync"
@@ -476,5 +477,45 @@ func TestHugeLengthField(t *testing.T) {
 
 	if got := collect(t, w); got != "[1:a]" {
 		t.Fatalf("got %s", got)
+	}
+}
+
+func TestParseSlotBounds(t *testing.T) {
+	good := slot{seq: 1, readAbs: 100, readIdx: 5, snapIdx: 4}
+
+	cases := []struct {
+		edit  func(*slot)
+		name  string
+		valid bool
+	}{
+		{name: "good", edit: func(*slot) {}, valid: true},
+		{name: "seq 0", edit: func(s *slot) { s.seq = 0 }},
+		{name: "snapFile 2", edit: func(s *slot) { s.snapFile = 2 }},
+		{name: "snapFile 1", edit: func(s *slot) { s.snapFile = 1 }, valid: true},
+		{name: "readAbs max", edit: func(s *slot) { s.readAbs = math.MaxInt64 }, valid: true},
+		{name: "readAbs over", edit: func(s *slot) { s.readAbs = math.MaxInt64 + 1 }},
+		{name: "readIdx 0", edit: func(s *slot) { s.readIdx, s.snapIdx = 0, 0 }},
+		{name: "readIdx max", edit: func(s *slot) { s.readIdx = math.MaxInt64 }, valid: true},
+		{name: "readIdx over", edit: func(s *slot) { s.readIdx = math.MaxInt64 + 1 }},
+		{name: "snapshot at first live", edit: func(s *slot) { s.snapIdx = 5 }},
+	}
+
+	for _, c := range cases {
+		t.Run(c.name, func(t *testing.T) {
+			s := good
+			c.edit(&s)
+
+			b := make([]byte, slotSize)
+			copy(b, encodeSlot(s))
+
+			got, ok := parseSlot(b)
+			if ok != c.valid {
+				t.Fatalf("valid %v, want %v", ok, c.valid)
+			}
+
+			if ok && got != s {
+				t.Fatalf("parsed %+v, want %+v", got, s)
+			}
+		})
 	}
 }

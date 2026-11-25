@@ -126,7 +126,8 @@ go test -run x -bench . ./...
 ## Testing
 
 ```
-go test -race ./...                 # unit tests and examples
+go test -race ./...                 # unit tests, examples, fuzz seed corpus
 go test -short ./...                # skips the 64 MiB max-record test
+go test -fuzz FuzzOps -fuzztime 1m  # also FuzzCorruption, FuzzSlot
 gremlins unleash                    # mutation testing, see .gremlins.yaml
 ```
