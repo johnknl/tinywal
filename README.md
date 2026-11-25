@@ -122,3 +122,11 @@ under 16 concurrent writers costs about 1% of append throughput.
 ```
 go test -run x -bench . ./...
 ```
+
+## Testing
+
+```
+go test -race ./...                 # unit tests and examples
+go test -short ./...                # skips the 64 MiB max-record test
+gremlins unleash                    # mutation testing, see .gremlins.yaml
+```
