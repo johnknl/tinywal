@@ -1,0 +1,17 @@
+site_name: tinywal
+site_description: A minimal write-ahead log for Go
+theme:
+  name: material
+markdown_extensions:
+  - admonition
+nav:
+  - Overview: index.md
+  - Quick start: quickstart.md
+  - Appending and group commit: appending.md
+  - Replay and Snapshot: replay.md
+  - Compaction: compaction.md
+  - Recovery and failure model: recovery.md
+  - Configuration: configuration.md
+  - Limits and caveats: limits.md
+  - Platform notes: platforms.md
+  - Performance: performance.md
